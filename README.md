@@ -1,3 +1,3 @@
-# Javascript STL File Viewer
+# WEBGL STL File Viewer
 
 WIP 2024.
