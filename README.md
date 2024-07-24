@@ -10,7 +10,12 @@ Various things that can be done are...
 # Usage
 Code here WIP
 
+# Images
+Images here WIP
 
-# Attribution
+# License & Attribution
+This STL file viewer is provided under the MIT attribution license. 
+
+It uses OGL, port from threejs
 
 grid.
