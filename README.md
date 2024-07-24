@@ -1,4 +1,4 @@
-# WEBGL STL File Viewer
+# WEBGL STL Viewer
 
 WIP 2024.
 
