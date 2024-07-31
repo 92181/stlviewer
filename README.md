@@ -18,4 +18,4 @@ This STL file viewer is provided under the MIT attribution license.
 
 It uses OGL, port from threejs
 
-grid.
+It uses a modified version of the THREE.InfiniteGridHelper by Fyrestar.
