@@ -1,0 +1,743 @@
+<!doctype html><html>
+<head>
+    <title>Nurb Modeler</title>
+    <script src="three.js"></script>
+    <script src="grid.js"></script>
+</head>
+<body style="margin:0;overflow:hidden">
+<canvas c0 style="position:absolute"></canvas><canvas c1 style="position:absolute;width:100%;height:100%"></canvas><input style="display:none;" type="file"/>
+<script>
+    // Set Color Theme;
+    if(1){r1=0;document.body.style.background="#000";}else{r1=0xffffff;document.body.style.background="#fff";}g3=document.querySelector("[c1]");CanvasGL=document.querySelector("[c0]");g4=g3.getContext("2d");g6=document.querySelector("input");gc=screen.width/2200;
+
+    // Rotate Specified Vertices Of Array Around Specified Point;
+    function rotateVertices(vertices,start,end,angleX,angleY,angleZ)
+    {
+        const cosX = Math.cos(angleX);const sinX = Math.sin(angleX);const cosY = Math.cos(angleY);const sinY = Math.sin(angleY);const cosZ = Math.cos(angleZ);const sinZ = Math.sin(angleZ);
+
+        for (let i = start; i < end; i += 3)
+        {
+            // Translate the vertex to the origin
+            const x = vertices[i] - o0;
+            const y = vertices[i + 1] - o1;
+            const z = vertices[i + 2] - o2;
+
+            // Rotate around the x-axis
+            const newX = x;
+            const newY = y * cosX - z * sinX;
+            const newZ = y * sinX + z * cosX;
+
+            // Rotate around the y-axis
+            const finalX = newX * cosY + newZ * sinY;
+            const finalY = newY;
+            const finalZ = -newX * sinY + newZ * cosY;
+
+            // Rotate around the z-axis
+            vertices[i] = finalX * cosZ - finalY * sinZ + o0;
+            vertices[i + 1] = finalX * sinZ + finalY * cosZ + o1;
+            vertices[i + 2] = finalZ + o2;
+        }
+
+        //return vertices;
+    }
+
+    function scaleMesh(vertices,start,end,scaleX,scaleY,scaleZ)
+    {
+        for (let i = start; i < end; i += 3)
+        {
+            let x = vertices[i];
+            let y = vertices[i + 1];
+            let z = vertices[i + 2];
+
+            x -= o0;
+            y -= o1;
+            z -= o2;
+
+            x *= scaleX;
+            y *= scaleY;
+            z *= scaleZ;
+
+            x += o0;
+            y += o1;
+            z += o2;
+
+            vertices[i] = x;
+            vertices[i + 1] = y;
+            vertices[i + 2] = z;
+        }
+
+        //return vertices;
+    }
+
+    // Move Vertices;
+    function MoveX(d){i=0;while(i<i4){cf[i]+=d;i+=3}}
+    function MoveY(d){i=0;while(i<i4){cf[i+1]+=d;i+=3}}
+    function MoveZ(d){i=0;while(i<i4){cf[i+2]+=d;i+=3}}
+
+
+    // Compute Normals For Lighting;
+    function computeVertexN(faceArray)
+    {
+        let normals = [];
+
+        for (let i = 0; i < faceArray.length; i += 9)
+        {
+            let v0 = new THREE.Vector3(faceArray[i], faceArray[i + 1], faceArray[i + 2]);
+            let v1 = new THREE.Vector3(faceArray[i + 3], faceArray[i + 4], faceArray[i + 5]);
+            let v2 = new THREE.Vector3(faceArray[i + 6], faceArray[i + 7], faceArray[i + 8]);
+
+            let normal = new THREE.Vector3().crossVectors(v1.clone().sub(v0), v2.clone().sub(v0)).normalize();
+
+            normals.push(normal.x, normal.y, normal.z);
+            normals.push(normal.x, normal.y, normal.z);
+            normals.push(normal.x, normal.y, normal.z);
+        }
+
+        return normals;
+    }
+
+    // Set Mesh UI Entry At Specified Color & Position;
+    function f22(q,l)
+    {
+        let z=qi+qz*((q-3)/3);g4.beginPath();g4.font=gc*16+`px 'u'`;g4.lineWidth=gc;g4.clearRect(gc*18,z-gc*21,gc*229,gc*32);g4.roundRect(gc*20,z-gc*19,gc*225,gc*28,gc*6);
+        
+        // Is The Entry Active, Decide Color;
+        if(l)
+        {
+            g4.fillStyle=g4.strokeStyle="#fff";g4.fill();g4.fillStyle="#000";
+        }
+        else
+        {
+            g4.fillStyle="#fff";g4.strokeStyle="#404040";g4.stroke();
+        }
+
+        g4.translate(gc*212,z-gc*10);g4.scale(gc*1.1,gc*1.1);g4.fill(new Path2D("M11.5.5A.5.5 180 0111 1H1A.5.5 180 011 0H11A.5.5 180 0111.5.5M13.5 4.5A.5.5 180 0113 5H3A.5.5 180 013 4H13A.5.5 180 0113.5 4.5M15.5 8.5A.5.5 180 0115 9H5A.5.5 180 015 8H15A.5.5 180 0115.5 8.5"));g4.setTransform(1,0,0,1,0,0);
+        g4.translate(gc*30,z-gc*14);g4.scale(gc*1.1,gc*1.1);g4.fill(new Path2D("M8.235 1.559a.5.5 0 0 0-.47 0l-7.5 4a.5.5 0 0 0 0 .882L3.188 8 .264 9.559a.5.5 0 0 0 0 .882l7.5 4a.5.5 0 0 0 .47 0l7.5-4a.5.5 0 0 0 0-.882L12.813 8l2.922-1.559a.5.5 0 0 0 0-.882zm3.515 7.008L14.438 10 8 13.433 1.562 10 4.25 8.567l3.515 1.874a.5.5 0 0 0 .47 0zM8 9.433 1.562 6 8 2.567 14.438 6z"));g4.setTransform(1,0,0,1,0,0);
+        
+        g4.fillText(qk[q],gc*56,z);
+    }
+
+    // Add Mesh To Scene And Call Function 22 For UI;
+    function f16()
+    {
+        // Push To UI & Save Position, Also Create Isolated Array For Mesh;
+        qk[qw+1]=i4;h=cf.slice(k,i4);f22(qw);qf+=qz;
+
+        // Compute Normals And Add Mesh To Scene;
+        a=new THREE.BufferGeometry();a.setAttribute('position',new THREE.Float32BufferAttribute(h,3));a.setAttribute('normal',new THREE.Float32BufferAttribute(computeVertexN(h),3));qk[qw+2]=new THREE.Mesh(a,r2);qk[qw+2].ix=qw;lk+=1;scene.add(qk[qw+2]);r9=1;qw+=3;
+    }
+
+    // Calculate Origin Point Of Mesh;
+    function f20(z,n,m)
+    {
+        o0=o1=o2=0;o3=(m-n)/3;while(n<m){o0+=z[n];o1+=z[n+1];o2+=z[n+2];n+=3}o0/=o3;o1/=o3;o2/=o3;
+    }
+
+    lka=[0,0,0, 5,6,2, 6,2,3, 6,2,3];f20(lka,3,12);
+    console.log(o0);console.log(o1);console.log(o2); // 
+
+    // Deselect All Meshes;
+    function f18(){z=0;while(z<qt){qk[qm[z]+2].material=r2;f22(qm[z],0);z+=1}}
+
+    // Universal Check For Mesh Selection;
+    function f17()
+    {
+        // Check If Already Selected;
+        i=0;while(i<qt&&qm[i]!=qe){i+=1}
+
+        if(kx==2)
+        {
+            // Handle Single Selection;
+            f18();if(i==qt){qk[qe+2].material=r4;qm[0]=qe;qt=1;f22(qe,1)}else{qt=0}
+        }
+        else
+        {
+            // Handle Shift Selection;
+            if(i==qt){qk[qe+2].material=r4;qm[qt]=qe;qt+=1;f22(qe,1)}else{qk[qe+2].material=r2;qt-=1;f22(qe,0);while(i<qt){qm[i]=qm[i+1];i+=1}}
+        }
+    }
+
+    // Vector Images;
+    tyh=new Path2D("M3.5 2A1.5 1.5 0 0 1 5 3.5V5H3.5a1.5 1.5 0 1 1 0-3M6 5V3.5A2.5 2.5 0 1 0 3.5 6H5v4H3.5A2.5 2.5 0 1 0 6 12.5V11h4v1.5a2.5 2.5 0 1 0 2.5-2.5H11V6h1.5A2.5 2.5 0 1 0 10 3.5V5zm4 1v4H6V6zm1-1V3.5A1.5 1.5 0 1 1 12.5 5zm0 6h1.5a1.5 1.5 0 1 1-1.5 1.5zm-6 0v1.5A1.5 1.5 0 1 1 3.5 11z");
+
+    // Inline Input Functions;
+    function gpz(){gpr=g4.measureText(gpv[gpq]).width/2*gps;g4.fillText(gpv[gpq],gpw-gpr,gpa)}
+    function gpo(){gpz();g4.fillRect(gpw+g4.measureText(gpv[gpq].slice(0,gpp)).width-gpr,gpa-gc*13,gc*1,gc*14+2)}
+    function gpu(){gpz();if(gpp>gpj){tmp0=gpj;tmp1=gpp;}else{tmp0=gpp;tmp1=gpj}g4.fillRect(gpw+g4.measureText(gpv[gpq].slice(0,tmp0)).width-gpr,gpa+gc*5,g4.measureText(gpv[gpq].slice(tmp0,tmp1)).width,gc)}
+    function gph(){g4.fillStyle="#000";g4.fillRect(gpw-gc*2-g4.measureText(gpv[gpq]).width/2*gps,gpa-gc*14,g4.measureText(gpv[gpq]).width+gc*6,gc*14+gc*6);g4.fillStyle="#fff"}
+    function gpk(){if(gpp>gpj){tmp=gpp;gpp=gpj;gpj=tmp}}function gpb(){gpk();navigator.clipboard.writeText(gpv[gpq].slice(gpp,gpj))}
+
+
+    // TextBox Setting Function;
+    function gp0(){gpw=gh1+gc*100;gpa=gh3+gc*41;gpp=gpj=gpv[gpq].length;gpx=1;gpl=f19;gps=1}function gp1(){gpw=gh1+gc*200;gpa=gh3+gc*41;gpp=gpj=gpv[gpq].length;gpx=1;gpl=f19;gps=1}
+    function gp2(){gpw=gh1+gc*300;gpa=gh3+gc*41;gpp=gpj=gpv[gpq].length;gpx=1;gpl=f19;gps=1}function gp3(){gpw=gh1+gc*100;gpa=gh3+gc*80;gpp=gpj=gpv[gpq].length;gpx=1;gpl=f19;gps=1}
+    function gp4(){gpw=gh1+gc*200;gpa=gh3+gc*80;gpp=gpj=gpv[gpq].length;gpx=1;gpl=f19;gps=1}function gp5(){gpw=gh1+gc*300;gpa=gh3+gc*80;gpp=gpj=gpv[gpq].length;gpx=1;gpl=f19;gps=1}
+
+    // Text Input Array Of Strings, Active Index;
+    gpv=["0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00"];gpq=-1;
+
+    // Draw UI For Rotation & Scaling;
+    function f21(i,z)
+    {
+        j=gc;
+
+        g4.beginPath();g4.strokeStyle="#404040";g4.fillStyle="#000";g4.lineWidth=gc;
+        gh1=RotMovSclMenuLeft+gc*23;gh3=gh2+gc*40;gh4=gh2+gc*66;gh5=RotMovSclMenuLeft+gc*85;gh6=gh3+gc*64;gh7=gc*6;gh8=gh5+gc*100;gh9=gh5+gc*200;ghx=gc*80;
+
+        g4.roundRect(RotMovSclMenuLeft,gh2,RotMovSclMenuWidth,gc*220,gc*17);g4.fill();g4.stroke();
+
+        g4.font=j*17+"px 'u'";g4.fillStyle="#fff";g4.fillText(i,gh1+j*30,gh3);g4.font=j*14+"px 'u'";g4.fillText(z,gh1,gh3+j*40);g4.fillText("Axis",gh1,gh3+j*80);
+
+        // Fill Text Boxes With Corresponding Values;
+        gpq=0;gp0();gpz();gpq=1;gp1();gpz();gpq=2;gp2();gpz();gpq=3;gp3();gpz();gpq=4;gp4();gpz();gpq=5;gp5();gpz();gpq=-1;
+
+        g4.beginPath();g4.roundRect(gh5,gh4,j*80,gc*22,gh7);g4.roundRect(gh5+j*100,gh4,j*80,j*22,gh7);g4.roundRect(gh5+j*200,gh4,j*80,j*22,gh7);g4.roundRect(gh5,gh6,j*80,j*22,gh7);g4.roundRect(gh5+j*100,gh6,j*80,j*22,gh7);g4.roundRect(gh5+j*200,gh6,j*80,j*22,gh7);g4.stroke();
+
+        g4.fillText("Escape",gh1+j*22,gh2+j*200);g4.fillText("Enter",gh1+j*306,gh2+j*200);
+        g4.translate(gh1,gh2+j*188);g4.scale(j*0.9,j*0.9);g4.fill(tyh);g4.setTransform(1,0,0,1,0,0);g4.translate(gh1+j*283,gh2+j*188);g4.scale(j*0.9,j*0.9);g4.fill(tyh);g4.setTransform(1,0,0,1,0,0);
+
+        g4.translate(gh1,gh3-j*15);g4.scale(j*1.2,j*1.2);g4.fill(new Path2D("M7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10M.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L1.707 7.5H5.5a.5.5 0 0 1 0 1H1.707l1.147 1.146a.5.5 0 0 1-.708.708zM10 8a.5.5 0 0 1 .5-.5h3.793l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L14.293 8.5H10.5A.5.5 0 0 1 10 8"));g4.setTransform(1,0,0,1,0,0);
+    }
+
+    // Draw UI For Movement;
+    function f23()
+    {
+        j=gc;gha=g3.height-gc*222;
+
+        g4.beginPath();g4.strokeStyle="#404040";g4.fillStyle="#000";g4.lineWidth=gc;
+        gh1=RotMovSclMenuLeft+gc*23;gh3=gha+gc*40;gh4=gha+gc*66;gh5=RotMovSclMenuLeft+gc*85;gh6=gh3+gc*64;gh7=gc*6;gh8=gh5+gc*100;gh9=gh5+gc*200;ghx=gc*80;
+
+        g4.roundRect(RotMovSclMenuLeft,gha,RotMovSclMenuWidth,gc*182,gc*17);g4.fill();g4.stroke();
+
+        g4.font=j*17+"px 'u'";g4.fillStyle="#fff";g4.fillText("Movement",gh1+j*30,gh3);g4.font=j*14+"px 'u'";g4.fillText("Move",gh1,gh3+j*40);
+        g4.beginPath();g4.roundRect(gh5,gh4,j*80,gc*22,gh7);g4.roundRect(gh5+j*100,gh4,j*80,j*22,gh7);g4.roundRect(gh5+j*200,gh4,j*80,j*22,gh7);g4.stroke();
+
+        g4.fillText("Escape",gh1+j*22,gha+j*162);g4.fillText("Enter",gh1+j*306,gha+j*162);
+        g4.translate(gh1,gha+j*150);g4.scale(j*0.9,j*0.9);g4.fill(tyh);g4.setTransform(1,0,0,1,0,0);g4.translate(gh1+j*283,gha+j*150);g4.scale(j*0.9,j*0.9);g4.fill(tyh);g4.setTransform(1,0,0,1,0,0);
+
+        g4.translate(gh1,gh3-j*15);g4.scale(j*1.2,j*1.2);g4.fill(new Path2D("M7.646.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 1.707V5.5a.5.5 0 0 1-1 0V1.707L6.354 2.854a.5.5 0 1 1-.708-.708zM8 10a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 14.293V10.5A.5.5 0 0 1 8 10M.146 8.354a.5.5 0 0 1 0-.708l2-2a.5.5 0 1 1 .708.708L1.707 7.5H5.5a.5.5 0 0 1 0 1H1.707l1.147 1.146a.5.5 0 0 1-.708.708zM10 8a.5.5 0 0 1 .5-.5h3.793l-1.147-1.146a.5.5 0 0 1 .708-.708l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L14.293 8.5H10.5A.5.5 0 0 1 10 8"));g4.setTransform(1,0,0,1,0,0);
+    }
+
+    // Rotate, Transform & Scale A Mesh;
+    function f19()
+    {
+        //MoveX(0);rotateVertices(cf,0,Math.PI/2,0,calculateMidpoint(cf));
+
+        //scaleMesh(cf,2,2,2,calculateMidpoint(cf));
+
+        i=0;while(i<qt)
+        {
+            z=qm[i];e=qk[z-2];j=qk[z+1];v=qk[z+2].geometry;
+            
+            if(k6==1)
+            {
+                rotateVertices(cf,e,j,parseFloat(gpv[0]),parseFloat(gpv[1]),parseFloat(gpv[2]));
+            }
+            else if(k6==2)
+            {
+                scaleMesh(cf,e,j,parseFloat(gpv[0]),parseFloat(gpv[1]),parseFloat(gpv[2]));
+            }
+            else if(k6==3)
+            {
+                MoveX(parseFloat(gpv[0]));MoveX(parseFloat(gpv[1]));MoveX(parseFloat(gpv[2]));
+            }
+
+            h=cf.slice(e,j);v.setAttribute('position',new THREE.Float32BufferAttribute(h,3));v.setAttribute('normal',new THREE.Float32BufferAttribute(computeVertexN(h),3));
+            i+=1;
+        }
+
+        r9=1;console.log('Rotate!');
+    }
+
+    (async function()
+    {
+        // General Variables, (Nurbs Quality: cn, Vertices: cv, Size Of Nurbs Surface: cm, Size In Pages For Allocation: cs, Mesh Info: qk);
+        cv=[];cf=[];i4=0;p2=2*Math.PI;s6=0;s7=4*4*4;cn=100;cm=cn*cn*18;cs=parseInt(cm*10/16384);qk=[0,0,0];qw=3;qm=[];lk=1;qt=0;qf=qi=gc*140;qz=gc*45;k6=0;qy=gc*270;
+    
+        OffsetTopGL=gc*90;CornerRadiusGL=gc*30;RotMovSclMenuLeft=gc*325;RotMovSclMenuWidth=gc*400;RotMovSclMenuRight=RotMovSclMenuLeft+RotMovSclMenuWidth;
+
+        CanvasGL.style.left=qy+"px";CanvasGL.style.top=OffsetTopGL+"px";CanvasGL.style.borderRadius=CornerRadiusGL+"px 0 0 0";
+
+        // Load Font;
+        const font_name = new FontFace('u','url("u.woff2")');document.fonts.add(font_name);await font_name.load();
+
+        // Import STL File To Mesh Function;
+        g6.addEventListener('change',(e)=>
+        {
+            file=e.target.files[0];qk[qw]=file.name;reader=new FileReader();
+
+            reader.onload=function(event)
+            {
+                f13(event.target.result);
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
+
+        // Create Camera & Scene, Add Fog & Background Color;
+        camera=new THREE.PerspectiveCamera(75,0,1,10000);camera.position.y=200;camera.position.z=200;camera.rotation.x=-0.5;scene=new THREE.Scene();
+
+        // Create Renderer;
+        r0=new THREE.WebGLRenderer({alpha:true,antialias:true,canvas:CanvasGL});r3=window.devicePixelRatio;r0.setClearColor(r1,0);r0.setPixelRatio(r3);
+        function f2(){dw=window.innerWidth;dh=window.innerHeight;g3.width=dw*r3;g3.height=dh*r3;dl=g3.width-150;dm=g3.height-150;camera.aspect=(dw-qy)/(dh-OffsetTopGL);camera.updateProjectionMatrix();r0.setSize(dw-qy,dh-OffsetTopGL);r9=1}
+        f2();f12();
+
+        gh2=g3.height-gc*260;
+
+        let k0=k1=k2=k3=k4=k5=ku=r9=0;kx=2;ax=0;
+
+        // Draw UI To Canvas;
+        function f12()
+        {
+            g4.strokeStyle="#404040";g4.fillStyle="#000";i=g3.height;g4.beginPath();g4.moveTo(qy,i);g4.arc(qy+CornerRadiusGL,OffsetTopGL+CornerRadiusGL,CornerRadiusGL,Math.PI,-Math.PI/2);g4.lineTo(g3.width,OffsetTopGL);g4.stroke();
+
+            g4.textBaseline='left';g4.textAlign='left';g4.fillStyle="#fff";g4.translate(gc*20,gc*15);g4.scale(gc*0.8,gc*0.8);g4.fill(new Path2D("M23 55Q27 63 36 68 33 61 35 58C37 64 41 63 43 68 46 63 38 56 41 50 44 44 68 49 68 39 68 35 52 34 49 24Q39 16 44 4 41 5 39 7 39 4 37 0 30 7 25 17 13 16 7 21 13 20 16 21 3 25 0 37 5 32 9 31 3 43 9 55 9 46 12 42 13 54 27 67 22 58 23 55M37 18Q33 17 30 18 32 11 36 7 37 11 37 18M40 25Q46 27 48 31 41 30 40 25"));
+            g4.setTransform(1,0,0,1,0,0);g4.font=gc*24+`px 'u'`;g4.fillText("Tellurium",gc*90,gc*36);
+
+            g4.font=gc*16+`px 'u'`;g4.fillText("File",gc*90,gc*65);g4.fillText("Edit",gc*130,gc*65);g4.fillText("View",gc*175,gc*65);g4.fillText("Insert",gc*225,gc*65);g4.fillText("Tools",gc*282,gc*65);g4.fillText("Help",gc*335,gc*65);
+        }
+        
+        // Declare Custom Mesh Shaders (Normal, Selected);
+        r5="varying vec3 vNormal;varying vec3 vPosition;void main(){vNormal=normal;vPosition=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}";
+        r2=new THREE.ShaderMaterial({vertexShader:r5,fragmentShader:"varying vec3 vNormal;varying vec3 vPosition;vec3 normal;void main(){if(gl_FrontFacing){normal=vNormal;}else{normal=-vNormal;}gl_FragColor=vec4(vec3(dot(normal,normalize(cameraPosition-vPosition))),1.0);}",side:THREE.DoubleSide});
+        r4=new THREE.ShaderMaterial({vertexShader:r5,fragmentShader:`varying vec3 vNormal;varying vec3 vPosition;vec3 normal;void main(){if(gl_FrontFacing){normal=vNormal;}else{normal=-vNormal;}gl_FragColor=vec4(vec3(0.9,dot(normal,normalize(cameraPosition-vPosition)),0.9),1.0);}`,side:THREE.DoubleSide});
+        
+        // Generate Grid For Scene & Add Raycaster;
+        grid=InfiniteGridHelper("2000.0","20.0","0.6,0.6,0.6",(gc*1.3).toFixed(1));scene.add(grid);
+        grid1=InfiniteGridHelper("2000.0","80.0","0.7,0.7,0.7",(gc*1.6).toFixed(1));scene.add(grid1);
+        line0=LineHelper("2000.0",(gc*2).toFixed(1));scene.add(line0);
+
+        // Listen To KeyDown Event;
+        window.onkeydown=async function(e)
+        {
+            if(gpq>=0)
+            {
+               if(e.metaKey)
+               {
+                  switch(e.key)
+                  {
+                    case"a":{gpx=0;gpp=0;gpj=gpv[gpq].length;gph();gpu();break}
+                    case"c":{if(!gpx){gpb()}break}
+                    case"x":{if(!gpx){gpx=1;gph();gpb();gpv[gpq]=gpv[gpq].slice(0,gpp)+gpv[gpq].slice(gpj,gpv[gpq].length);gpo();gpl()}break}
+                    case"v":{if(!gpx){gpk();gpv[gpq]=gpv[gpq].slice(0,gpp)+await navigator.clipboard.readText()+gpv[gpq].slice(gpj,gpv[gpq].length);gph();gpo()}else{gpv[gpq]=gpv[gpq].slice(0,gpp)+await navigator.clipboard.readText()+gpv[gpq].slice(gpp);gph();gpo()}gpl();break}
+                  }
+               }
+               else if(e.key.length<2)
+               {
+                  if(!gpx){gpx=1;gph();gpk();gpv[gpq]=gpv[gpq].slice(0,gpp)+e.key+gpv[gpq].slice(gpj,gpv[gpq].length);gpp+=1;gpo()}else{gpv[gpq]=gpv[gpq].slice(0,gpp)+e.key+gpv[gpq].slice(gpp);gpp+=1;gph();gpo()}gpl()
+               }
+               else
+               {
+                  switch(e.key)
+                  {
+                    case"Backspace":{if(!gpx){gpx=1;gph();gpk();gpv[gpq]=gpv[gpq].slice(0,gpp)+gpv[gpq].slice(gpj,gpv[gpq].length);gpo()}else if(gpp>0){gph();gpp-=1;gpv[gpq]=gpv[gpq].slice(0,gpp)+gpv[gpq].slice(gpp+1);gpo()}break}
+                    case"ArrowLeft":{if(e.shiftKey){if(gpx){gpj=gpp;gpx=0}if(gpj>0){gpj-=1;gph();gpu()}}else if(gpp>0){gpp-=1;gpx=1;gph();gpo()}break}
+                    case"ArrowRight":{if(e.shiftKey){if(gpx){gpj=gpp;gpx=0}if(gpj<gpv[gpq].length){gpj+=1;gph();gpu()}}else if(gpp<gpv[gpq].length){gpp+=1;gpx=1;gph();gpo()}break}
+                  }
+               }
+            }
+            else
+            {
+                switch(e.code)
+                {
+                    case"KeyR":{if(qt>0){k6=1;f21("Rotation","Angle")}break}
+                    case"KeyT":{if(qt>0){k6=2;f21("Resizing","Scale")}break}
+                    case"KeyP":{g6.click();break}
+                    case"KeyX":{if(gx>0){ax=1}break}
+                    case"KeyY":{if(gx>0){ax=2}break}
+                    case"KeyZ":{if(gx>0){ax=3}break}
+                    case"KeyG":{k6=3;f23();if(ku){ku=0}else{ku=1}break}
+                    case"ShiftLeft":{kx=4;break}
+                    case"KeyW":{k0=1;r9=1;break}
+                    case"KeyS":{k1=1;r9=1;break}
+                    case"KeyA":{k2=1;r9=1;break}
+                    case"KeyD":{k3=1;r9=1;break}
+                    case"KeyQ":{k4=1;r9=1;break}
+                    case"KeyE":{k5=1;r9=1;break}
+                }
+            }
+        }
+
+        window.onkeyup=function(k){switch(k.code){case"ShiftLeft":{kx=2;break}case"KeyW":{k0=0;break}case"KeyS":{k1=0;break}case"KeyA":{k2=0;break}case"KeyD":{k3=0;break}case"KeyQ":{k4=0;break}case"KeyE":{k5=0;break}}};
+
+        // Mouse Rotation;
+        g9=[];gx=0;
+
+        window.onmousedown=function(e)
+        {
+            // Buttons (File, Edit, View, Insert, Tools, Help)
+            if(e.clientY>gc*60&&e.clientY<gc*80)
+            {
+                if(e.clientX<gc*137){}else if(e.clientX<gc*185){}else if(e.clientX<gc*248){}
+                else if(e.clientX<gc*311){}else if(e.clientX<gc*373){}else if(e.clientX<gc*431){}
+            }
+
+            // Object Selector;
+            if(e.clientX<gc*300&&e.clientY>gc*105)
+            {
+                // Calculate Position And Call Event;
+                qe=parseInt((e.clientY-gc*65)/qz)*3;if(qe<qw){f17()}
+            }
+
+            // Catch Click On Control Points If Not Busy;
+            if(e.buttons<2)
+            {
+
+
+                // for scale just change angle to scale, and Rotation to Scaling
+
+                // Handle Input On Active Rotation, Scale Or Movement Menu;
+                if(k6&&e.clientY>gh2&&e.clientX>RotMovSclMenuLeft&&e.clientX<RotMovSclMenuRight)
+                {
+                    // Check XY Axis;
+                    if(e.clientY>gh4&&e.clientY<gh4+gc*22) // use k6
+                    {
+                        if(e.clientX>gh5&&e.clientX<gh5+ghx)
+                        {
+                            gpq=0;gp0();gph();gpo();
+                        }
+                        else if(e.clientX>gh8&&e.clientX<gh8+ghx)
+                        {
+                            gpq=1;gp1();gph();gpo();
+                        }
+                        else if(e.clientX>gh9&&e.clientX<gh9+ghx)
+                        {
+                            gpq=2;gp2();gph();gpo();
+                        }
+                        else if(gpq>=0){gph();gpz();gpq=-1}
+                    }
+                    else if(e.clientY>gh6&&e.clientY<gh6+gc*22&&k6<3)
+                    {
+                        console.log('Hey!')
+                        if(e.clientX>gh5&&e.clientX<gh5+ghx)
+                        {
+                            gpq=3;gp3();gph();gpo();
+                        }
+                        else if(e.clientX>gh8&&e.clientX<gh8+ghx)
+                        {
+                            gpq=4;gp4();gph();gpo();
+                        }
+                        else if(e.clientX>gh9&&e.clientX<gh9+ghx)
+                        {
+                            gpq=5;gp5();gph();gpo();
+                        }
+                        else if(gpq>=0){gph();gpz();gpq=-1}
+                    }
+                    else if(gpq>=0){gph();gpz();gpq=-1}
+                }
+                else if(e.clientX>qy&&e.clientY>OffsetTopGL)
+                {
+                    const raycaster = new THREE.Raycaster();const pointer = new THREE.Vector2();
+                
+                    pointer.x = ( event.clientX / (window.innerWidth+qy) ) * 2 - 1;
+                    pointer.y = - ( event.clientY / (window.innerHeight+OffsetTopGL) ) * 2 + 1;
+
+                    // update the picking ray with the camera and pointer position
+                    raycaster.setFromCamera( pointer, camera );
+
+                    // calculate objects intersecting the picking ray
+                    const intersects = raycaster.intersectObjects( scene.children );
+
+                    // On Object Process, Else Deselect All;
+                    if(intersects.length>0){qe=intersects[0].object.ix;f17()}else{f18();qt=0}
+                }
+            }
+
+            r9=1;
+        };
+
+        //function f3(){cv=[];cf=[];i4=0;s6=0;GenerateNurbs();g0.setAttribute('position',new THREE.Float32BufferAttribute(cf,3));f4();r9=1}
+
+        kh=new THREE.Euler(-0.5,0,0,'YXZ');kj=Math.PI/2;window.onmousemove=function(e)
+        {
+            if(e.buttons<2)
+            {
+                ga=(e.movementY+e.movementX)*0.5;
+
+                if(ax==1)
+                {
+                    i=0;while(i<gx){cr[g9[i]]+=ga;i+=1}f3();
+                }
+                else if(ax==2)
+                {
+                    i=0;while(i<gx){cr[g9[i]+1]+=ga;i+=1}f3();
+                }
+                else if(ax==3)
+                {
+                    i=0;while(i<gx){cr[g9[i]+2]+=ga;i+=1}f3();
+                }
+            }
+            else
+            {
+                r9=1;
+                
+                kh.y=(kh.y-e.movementX*0.005)%p2;if(kh.y<0){kh.y+=p2}kh.x=Math.max(kj-Math.PI,Math.min(kj,kh.x-e.movementY*0.005));
+                camera.quaternion.setFromEuler(kh);
+            }
+        };
+
+        // Split NurbSurface At Decimal Point In X Direction;
+        function f7(a,b,c,d,e)
+        {
+            pts=[];i=0;f=a-1;while(i<a)
+            {
+                pts[i]=[];j=0;while(j<a)
+                {
+                    pts[i][j]=[cr[c],cr[c+1],cr[c+2]];j+=1;c+=4;
+                }
+
+                i+=1;
+            }
+
+            srf=verb.geom.NurbsSurface.byKnotsControlPointsWeights(f,f,b,b,pts);split=srf.split(d,e);//console.log(split[0]);console.log(split[1]);
+            // The best is to not use the result for display. However only use it for the math and connection! However for the demo it is better!
+
+            // Only For split[0]
+            /*i=0;z=0;pts=split[0]._data.controlPoints;while(i<a)
+            {
+                j=0;while(j<a)
+                {
+                    cr[z]=pts[i][j][0];cr[z+1]=pts[i][j][1];cr[z+2]=pts[i][j][2];cr[z+3]=1;j+=1;c+=4;z+=4;
+                }
+
+                i+=1;
+            }
+
+            z=0;i=0;khs=split[0]._data.knotsU;while(i<khs.length){cj[z]=khs[i];z+=1;i+=1} // Does not seem to have any effect.. (wich is good?)
+            i=0;khs=split[0]._data.knotsV;while(i<khs.length){cj[z]=khs[i];z+=1;i+=1}*/
+        }
+
+        // Compare 2 Vector3's At Provided Indexes;
+        function f10(){if(cr[n0]==cr[n1]&&cr[n0+1]==cr[n1+1]&&cr[n0+2]==cr[n1+2]){n2=1;return}n2=0}
+
+        // Create 1 Linear Nurb Surface Using 3 Or 4 Border Curves;
+        function f9()
+        {
+            if(v4==4)
+            {
+                // if there is no connection they are opposites; if(cr[firstv0 or last]!=cr[firstv1 or last]){} // shift v0 v1 v2 v3; (v1=v0;v0=vt1;)
+                // get first 0,5,0 and last 60,20,0 and look at each end and start of the rest of the curves!
+                //n0=v0;n1=v1;f10();if(n2){}n1=v1+q8;f10();if(n2){}n1=v2;f10();if(n2){}n1=v2+q8;f10();if(n2){}n1=v3;f10();if(n2){}n1=v3+q8;f10();if(n2){}
+                // use!
+
+                // Set Border Points, Opposites In The Same Loop;
+                nl=s8;nb=s8+s7-sx;n0=v0;n2=v2;nx=n0+sx;while(n0<nx)
+                {
+                    cr[nl]=q5[n0];cr[nl+1]=q5[n0+1];cr[nl+2]=q5[n0+2];cr[nl+3]=1;n0+=4;nl+=4; // to function?
+                    cr[nb]=q5[n2];cr[nb+1]=q5[n2+1];cr[nb+2]=q5[n2+2];cr[nb+3]=1;n2+=4;nb+=4;
+                }
+
+                nl=s8+sx;nb=s8+sx+sx-na;n1=v1+na;n3=v3+na;nx=n1+sx-s9;while(n1<nx)
+                {
+                    cr[nl]=q5[n1];cr[nl+1]=q5[n1+1];cr[nl+2]=q5[n1+2];cr[nl+3]=1;n1+=4;nl+=sx;
+                    cr[nb]=q5[n3];cr[nb+1]=q5[n3+1];cr[nb+2]=q5[n3+2];cr[nb+3]=1;n3+=4;nb+=sx;
+                }
+
+                // Calculate Middle Points;
+                nl=s8+sx+na;n1=v1+na;n3=v3+na;nx=4;while(nx<q8)
+                {
+                    ng=nx/(sx-4);
+
+                    nr=4;n0=v0+na;n2=v2+na;while(nr<q8)
+                    {
+                        nh=nr/(sx-4);
+                        
+                        nq=q5[n0]+(q5[n2]-q5[n0])*ng;ne=q5[n0+1]+(q5[n2+1]-q5[n0+1])*ng;nt=q5[n0+2]+(q5[n2+2]-q5[n0+2])*ng;
+                        nw=q5[n1]+(q5[n3]-q5[n1])*nh;ny=q5[n1+1]+(q5[n3+1]-q5[n1+1])*nh;nu=q5[n1+2]+(q5[n3+2]-q5[n1+2])*nh;
+
+                        cr[nl]=(nq+nw)/2;cr[nl+1]=(ne+ny)/2;cr[nl+2]=(nt+nu)/2;cr[nl+3]=1;
+
+                        nr+=4;n0+=4;n2+=4;nl+=4;
+                    }
+
+                    nx+=4;n1+=4;n3+=4;nl+=8;
+                }
+
+                s8+=s7;
+            }
+        }
+
+        // Smooth 2 Nurb Surfaces With Control Points (Does Not Connect Surfaces);
+        function f8(z,i)
+        {
+            // check all corners to each other, i, i+q8, i+s7-q8, i+s7-na,  z, z+q8, z+s7-q8, z+s7-na (need a loop?, check against each other);
+            // flow is dependent on the 2 matching corners (for each surface);
+
+            //console.log(cr[z]+","+cr[z+1]+","+cr[z+2]);console.log(cr[i]+","+cr[i+1]+","+cr[i+2]);
+
+            //console.log(cr[z+4]+","+cr[z+1+4]+","+cr[z+2+4]); // +4
+            //console.log(cr[i-4]+","+cr[i+1-4]+","+cr[i+2-4]); // -4
+
+            // Temporary Variables For Dev (z0 to z1, z2 to z3);
+            z0=z;z1=z+q8;z2=i+q8;z3=i;
+
+            // Get The Direction For Each Curve Based On Their Start And End Points;
+            zq=z0-z;zw=z1-z;c=(zw-zq)/4;if(c<0){c-=1}else{c+=1}ze=z2-i;zr=z3-i;d=(zr-ze)/4;if(d<0){d-=1}else{d+=1}
+            
+            //console.log(c);console.log(d);
+
+            // Get First Control Point By Direction;
+            if(c==4||c==-4)
+            {
+                if(zq-sx>=0){e=z0-sx}else{e=z0+sx}
+            }
+            else
+            {
+                if(zq-sx>=0){e=z0-4}else{e=z0+4}
+            }
+
+            if(d==4||d==-4)
+            {
+                if(ze-sx>=0){f=z2-sx}else{f=z2+sx}
+            }
+            else
+            {
+                if(ze-sx>=0){f=z2-4}else{f=z2+4}
+            }
+
+            // If Both < Or > Than Connection Point They Will Become The Same, Else They Will Become Opposites;
+            zt=0;while(zt<na)
+            {
+                t0=cr[e];t1=cr[z];t2=cr[f];a0=(Math.abs(t1-t0)+Math.abs(t1-t2))/2;
+                if(t0>t1&&t2<t1){cr[e]=t1+a0;cr[f]=t1-a0}else if(t0<t1&&t2>t1){cr[e]=t1-a0;cr[f]=t1+a0}else{cr[e]=cr[f]=t1}
+
+                t0=cr[e+1];t1=cr[z+1];t2=cr[f+1];a0=(Math.abs(t1-t0)+Math.abs(t1-t2))/2;
+                if(t0>t1&&t2<t1){cr[e+1]=t1+a0;cr[f+1]=t1-a0}else if(t0<t1&&t2>t1){cr[e+1]=t1-a0;cr[f+1]=t1+a0}else{cr[e+1]=cr[f+1]=t1}
+                
+                t0=cr[e+2];t1=cr[z+2];t2=cr[f+2];a0=(Math.abs(t1-t0)+Math.abs(t1-t2))/2;
+                if(t0>t1&&t2<t1){cr[e+2]=t1+a0;cr[f+2]=t1-a0}else if(t0<t1&&t2>t1){cr[e+2]=t1-a0;cr[f+2]=t1+a0}else{cr[e+2]=cr[f+2]=t1}
+
+                z+=c;e+=c;i+=d;f+=d;zt+=1;
+            }
+        }
+
+        var pointMaterial=new THREE.PointsMaterial({size:5,sizeAttenuation:0,vertexColors:true});g1=new THREE.BufferGeometry();
+
+        // Function To Import STL File;
+        function f13(data)
+        {
+            // Format Check, ASCII Or Binary;
+            rz=new Uint8Array(data);k=i4;i=data.byteLength;if(rz[0]==115&&rz[1]==111&&rz[2]==108&&rz[3]==105&&rz[4]==100)
+            {
+                // Decode To String And Skip Data Until Next Line (\n);
+                j=new TextDecoder().decode(data);z=5;while(rz[z]!=10){z+=1}
+
+                while(z<i)
+                {
+                    // Skip Data Till Vertex;
+                    if(rz[z]==120&&rz[z+1]==32)
+                    {
+                        z+=2;a="";while(rz[z]!=32){a+=j[z];z+=1}cf[i4]=parseFloat(a);z+=1;
+                        a="";while(rz[z]!=32){a+=j[z];z+=1}cf[i4+1]=parseFloat(a);z+=1;
+                        a="";while(rz[z]!=10){a+=j[z];z+=1}cf[i4+2]=parseFloat(a);
+
+                        i4+=3;
+                    }
+
+                    z+=1;
+                }
+            }
+            else
+            {
+                // Import Binary STL Face Data;
+                j=new DataView(data);z=84;while(z<i)
+                {
+                    cf[i4]=j.getFloat32(z+12,1);cf[i4+1]=j.getFloat32(z+16,1);cf[i4+2]=j.getFloat32(z+20,1);
+                    cf[i4+3]=j.getFloat32(z+24,1);cf[i4+4]=j.getFloat32(z+28,1);cf[i4+5]=j.getFloat32(z+32,1);
+                    cf[i4+6]=j.getFloat32(z+36,1);cf[i4+7]=j.getFloat32(z+40,1);cf[i4+8]=j.getFloat32(z+44,1);
+
+                    z+=50;i4+=9;
+                }
+            }
+
+            f16();
+        }
+
+        // Export Binary STL File Of Active Meshes;
+        function f14()
+        {
+            j=new DataView(new ArrayBuffer(80+4+(50*i4/9)));j.setUint32(80,i4/9,1);z=84;
+
+            i=0;while(i<i4)
+            {
+                j.setFloat32(z+12,cf[i],1);j.setFloat32(z+16,cf[i+1],1);j.setFloat32(z+20,cf[i+2],1);
+                j.setFloat32(z+24,cf[i+3],1);j.setFloat32(z+28,cf[i+4],1);j.setFloat32(z+32,cf[i+5],1);
+                j.setFloat32(z+36,cf[i+6],1);j.setFloat32(z+40,cf[i+7],1);j.setFloat32(z+44,cf[i+8],1);
+
+                i+=9;z+=50;
+            }
+
+            a=document.createElement('a');a.href=url=URL.createObjectURL(new Blob([j],{type:'application/octet-stream'}));a.download='file.stl';a.click();URL.revokeObjectURL(url);
+        }
+
+        // Add Mesh To THREE JS;
+        //g0=new THREE.BufferGeometry();g0.setAttribute('position',new THREE.Float32BufferAttribute(cf,3));g0.setAttribute('normal',new THREE.Float32BufferAttribute(computeVertexN(cf),3));g7=new THREE.Mesh(g0,r2);scene.add(g7);
+
+
+        gd=gc*12;gh=gc*60-(gd/2);
+
+        function f15(axis,x,y,z,color)
+        {
+            g4.strokeStyle=g4.fillStyle=color;p3=(x0*x+x1*y+x2*z)*gh+dl;p4=dm-(x3*x+x4*y+x5*z)*gh;
+
+            g4.beginPath();g4.arc(p3,p4,gd,0,p2,0);g4.fill();
+            g4.beginPath();g4.moveTo(dl+(p3-dl)*0.2,dm+(p4-dm)*0.2);g4.lineTo(p3,p4);g4.lineCap="round";g4.lineWidth=gc*5;g4.stroke();
+            
+            g4.font="16px 'u'";g4.fillStyle="#000";g4.fillText(axis,p3-5,p4+5);
+        }
+
+
+
+        // first convert all other surfaces to curves!
+        // after that function create curve;
+
+        // open windows in the middle of the screen, rounded corners;
+
+
+        // intersect is an option for nurbs trimming gives back a nurbs curve!
+
+        // then improve split function so that you can split between 0.2 and 0.8! (split 1 surface 2 times (split of split))
+        // project curve onto nurbs surface; (how to do this?); would help with creating gaps in 1 surface?
+
+        // Direct Nurb Manipulation Is A Dead End; The Best Option Is To Abstract The Surfaces Away, Loft Between Curves!
+
+        /*
+            According to Wikipedia, a nurbs curve with 3 points can always be displayed perfectly with more points such as 4.
+            Wich means that if i convert all curves to the max that is in the editor i can perfectly join everthing.
+
+            Resolution can be fixed by slightly changing the start position to match the resolution decimal; (Meshing Match);
+        */
+
+        window.oncontextmenu=function(e){e.preventDefault()};
+
+        // Render Loop;
+        function f0()
+        {
+            if(r9)
+            {
+                r9=0;
+
+                // Apply Camera Movement;
+                if(k0){camera.translateZ(-kx);r9=1}if(k1){camera.translateZ(kx);r9=1}if(k2){camera.translateX(-kx);r9=1}
+                if(k3){camera.translateX(kx);r9=1}if(k4){camera.translateY(kx);r9=1}if(k5){camera.translateY(-kx);r9=1}
+
+                // Orientation Gizmo;
+                g4.clearRect(g3.width-310,g3.height-310,400,400);
+
+                a=Math.cos(kh.x);b=Math.sin(kh.x);c=Math.cos(kh.y);d=Math.sin(kh.y);e=Math.cos(kh.z);f=Math.sin(kh.z);
+                x0=c*e;x1=-c*f;x2=d;x3=a*f+b*e*d;x4=a*e-b*f*d;x5=-b*c;if(kh.x<0){i=1;z=-1}else{i=-1;z=1}
+
+                f15("Y",0,z,0,"#178cf0");
+                if(kh.y>Math.PI){f15("X",1,0,0,"#f73c3c");f15("Z",0,0,1,"#6ccb26");f15("Z",0,0,-1,"#6ccb26");f15("X",-1,0,0,"#f73c3c")}else{f15("X",-1,0,0,"#f73c3c");f15("Z",0,0,-1,"#6ccb26");f15("Z",0,0,1,"#6ccb26");f15("X",1,0,0,"#f73c3c")}
+                f15("Y",0,i,0,"#178cf0");
+                
+                // Render Scene;
+                r0.render(scene,camera);
+            }
+
+            requestAnimationFrame(f0);
+        }r9=1;f0();
+    })();
+</script>
+</body>
+</html>
