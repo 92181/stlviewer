@@ -476,143 +476,6 @@
             }
         };
 
-        // Split NurbSurface At Decimal Point In X Direction;
-        function f7(a,b,c,d,e)
-        {
-            pts=[];i=0;f=a-1;while(i<a)
-            {
-                pts[i]=[];j=0;while(j<a)
-                {
-                    pts[i][j]=[cr[c],cr[c+1],cr[c+2]];j+=1;c+=4;
-                }
-
-                i+=1;
-            }
-
-            srf=verb.geom.NurbsSurface.byKnotsControlPointsWeights(f,f,b,b,pts);split=srf.split(d,e);//console.log(split[0]);console.log(split[1]);
-            // The best is to not use the result for display. However only use it for the math and connection! However for the demo it is better!
-
-            // Only For split[0]
-            /*i=0;z=0;pts=split[0]._data.controlPoints;while(i<a)
-            {
-                j=0;while(j<a)
-                {
-                    cr[z]=pts[i][j][0];cr[z+1]=pts[i][j][1];cr[z+2]=pts[i][j][2];cr[z+3]=1;j+=1;c+=4;z+=4;
-                }
-
-                i+=1;
-            }
-
-            z=0;i=0;khs=split[0]._data.knotsU;while(i<khs.length){cj[z]=khs[i];z+=1;i+=1} // Does not seem to have any effect.. (wich is good?)
-            i=0;khs=split[0]._data.knotsV;while(i<khs.length){cj[z]=khs[i];z+=1;i+=1}*/
-        }
-
-        // Compare 2 Vector3's At Provided Indexes;
-        function f10(){if(cr[n0]==cr[n1]&&cr[n0+1]==cr[n1+1]&&cr[n0+2]==cr[n1+2]){n2=1;return}n2=0}
-
-        // Create 1 Linear Nurb Surface Using 3 Or 4 Border Curves;
-        function f9()
-        {
-            if(v4==4)
-            {
-                // if there is no connection they are opposites; if(cr[firstv0 or last]!=cr[firstv1 or last]){} // shift v0 v1 v2 v3; (v1=v0;v0=vt1;)
-                // get first 0,5,0 and last 60,20,0 and look at each end and start of the rest of the curves!
-                //n0=v0;n1=v1;f10();if(n2){}n1=v1+q8;f10();if(n2){}n1=v2;f10();if(n2){}n1=v2+q8;f10();if(n2){}n1=v3;f10();if(n2){}n1=v3+q8;f10();if(n2){}
-                // use!
-
-                // Set Border Points, Opposites In The Same Loop;
-                nl=s8;nb=s8+s7-sx;n0=v0;n2=v2;nx=n0+sx;while(n0<nx)
-                {
-                    cr[nl]=q5[n0];cr[nl+1]=q5[n0+1];cr[nl+2]=q5[n0+2];cr[nl+3]=1;n0+=4;nl+=4; // to function?
-                    cr[nb]=q5[n2];cr[nb+1]=q5[n2+1];cr[nb+2]=q5[n2+2];cr[nb+3]=1;n2+=4;nb+=4;
-                }
-
-                nl=s8+sx;nb=s8+sx+sx-na;n1=v1+na;n3=v3+na;nx=n1+sx-s9;while(n1<nx)
-                {
-                    cr[nl]=q5[n1];cr[nl+1]=q5[n1+1];cr[nl+2]=q5[n1+2];cr[nl+3]=1;n1+=4;nl+=sx;
-                    cr[nb]=q5[n3];cr[nb+1]=q5[n3+1];cr[nb+2]=q5[n3+2];cr[nb+3]=1;n3+=4;nb+=sx;
-                }
-
-                // Calculate Middle Points;
-                nl=s8+sx+na;n1=v1+na;n3=v3+na;nx=4;while(nx<q8)
-                {
-                    ng=nx/(sx-4);
-
-                    nr=4;n0=v0+na;n2=v2+na;while(nr<q8)
-                    {
-                        nh=nr/(sx-4);
-                        
-                        nq=q5[n0]+(q5[n2]-q5[n0])*ng;ne=q5[n0+1]+(q5[n2+1]-q5[n0+1])*ng;nt=q5[n0+2]+(q5[n2+2]-q5[n0+2])*ng;
-                        nw=q5[n1]+(q5[n3]-q5[n1])*nh;ny=q5[n1+1]+(q5[n3+1]-q5[n1+1])*nh;nu=q5[n1+2]+(q5[n3+2]-q5[n1+2])*nh;
-
-                        cr[nl]=(nq+nw)/2;cr[nl+1]=(ne+ny)/2;cr[nl+2]=(nt+nu)/2;cr[nl+3]=1;
-
-                        nr+=4;n0+=4;n2+=4;nl+=4;
-                    }
-
-                    nx+=4;n1+=4;n3+=4;nl+=8;
-                }
-
-                s8+=s7;
-            }
-        }
-
-        // Smooth 2 Nurb Surfaces With Control Points (Does Not Connect Surfaces);
-        function f8(z,i)
-        {
-            // check all corners to each other, i, i+q8, i+s7-q8, i+s7-na,  z, z+q8, z+s7-q8, z+s7-na (need a loop?, check against each other);
-            // flow is dependent on the 2 matching corners (for each surface);
-
-            //console.log(cr[z]+","+cr[z+1]+","+cr[z+2]);console.log(cr[i]+","+cr[i+1]+","+cr[i+2]);
-
-            //console.log(cr[z+4]+","+cr[z+1+4]+","+cr[z+2+4]); // +4
-            //console.log(cr[i-4]+","+cr[i+1-4]+","+cr[i+2-4]); // -4
-
-            // Temporary Variables For Dev (z0 to z1, z2 to z3);
-            z0=z;z1=z+q8;z2=i+q8;z3=i;
-
-            // Get The Direction For Each Curve Based On Their Start And End Points;
-            zq=z0-z;zw=z1-z;c=(zw-zq)/4;if(c<0){c-=1}else{c+=1}ze=z2-i;zr=z3-i;d=(zr-ze)/4;if(d<0){d-=1}else{d+=1}
-            
-            //console.log(c);console.log(d);
-
-            // Get First Control Point By Direction;
-            if(c==4||c==-4)
-            {
-                if(zq-sx>=0){e=z0-sx}else{e=z0+sx}
-            }
-            else
-            {
-                if(zq-sx>=0){e=z0-4}else{e=z0+4}
-            }
-
-            if(d==4||d==-4)
-            {
-                if(ze-sx>=0){f=z2-sx}else{f=z2+sx}
-            }
-            else
-            {
-                if(ze-sx>=0){f=z2-4}else{f=z2+4}
-            }
-
-            // If Both < Or > Than Connection Point They Will Become The Same, Else They Will Become Opposites;
-            zt=0;while(zt<na)
-            {
-                t0=cr[e];t1=cr[z];t2=cr[f];a0=(Math.abs(t1-t0)+Math.abs(t1-t2))/2;
-                if(t0>t1&&t2<t1){cr[e]=t1+a0;cr[f]=t1-a0}else if(t0<t1&&t2>t1){cr[e]=t1-a0;cr[f]=t1+a0}else{cr[e]=cr[f]=t1}
-
-                t0=cr[e+1];t1=cr[z+1];t2=cr[f+1];a0=(Math.abs(t1-t0)+Math.abs(t1-t2))/2;
-                if(t0>t1&&t2<t1){cr[e+1]=t1+a0;cr[f+1]=t1-a0}else if(t0<t1&&t2>t1){cr[e+1]=t1-a0;cr[f+1]=t1+a0}else{cr[e+1]=cr[f+1]=t1}
-                
-                t0=cr[e+2];t1=cr[z+2];t2=cr[f+2];a0=(Math.abs(t1-t0)+Math.abs(t1-t2))/2;
-                if(t0>t1&&t2<t1){cr[e+2]=t1+a0;cr[f+2]=t1-a0}else if(t0<t1&&t2>t1){cr[e+2]=t1-a0;cr[f+2]=t1+a0}else{cr[e+2]=cr[f+2]=t1}
-
-                z+=c;e+=c;i+=d;f+=d;zt+=1;
-            }
-        }
-
-        var pointMaterial=new THREE.PointsMaterial({size:5,sizeAttenuation:0,vertexColors:true});g1=new THREE.BufferGeometry();
-
         // Function To Import STL File;
         function f13(data)
         {
@@ -670,10 +533,6 @@
             a=document.createElement('a');a.href=url=URL.createObjectURL(new Blob([j],{type:'application/octet-stream'}));a.download='file.stl';a.click();URL.revokeObjectURL(url);
         }
 
-        // Add Mesh To THREE JS;
-        //g0=new THREE.BufferGeometry();g0.setAttribute('position',new THREE.Float32BufferAttribute(cf,3));g0.setAttribute('normal',new THREE.Float32BufferAttribute(computeVertexN(cf),3));g7=new THREE.Mesh(g0,r2);scene.add(g7);
-
-
         gd=gc*12;gh=gc*60-(gd/2);
 
         function f15(axis,x,y,z,color)
@@ -685,28 +544,6 @@
             
             g4.font="16px 'u'";g4.fillStyle="#000";g4.fillText(axis,p3-5,p4+5);
         }
-
-
-
-        // first convert all other surfaces to curves!
-        // after that function create curve;
-
-        // open windows in the middle of the screen, rounded corners;
-
-
-        // intersect is an option for nurbs trimming gives back a nurbs curve!
-
-        // then improve split function so that you can split between 0.2 and 0.8! (split 1 surface 2 times (split of split))
-        // project curve onto nurbs surface; (how to do this?); would help with creating gaps in 1 surface?
-
-        // Direct Nurb Manipulation Is A Dead End; The Best Option Is To Abstract The Surfaces Away, Loft Between Curves!
-
-        /*
-            According to Wikipedia, a nurbs curve with 3 points can always be displayed perfectly with more points such as 4.
-            Wich means that if i convert all curves to the max that is in the editor i can perfectly join everthing.
-
-            Resolution can be fixed by slightly changing the start position to match the resolution decimal; (Meshing Match);
-        */
 
         window.oncontextmenu=function(e){e.preventDefault()};
 
