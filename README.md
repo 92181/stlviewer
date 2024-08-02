@@ -2,6 +2,8 @@
 
 WIP 2024.
 
+This project has it's origins as an advanced NURB modeler, however I decided to branch out a part of the program and created this STL file viewer.
+
 Various things that can be done are...
 * Import ASCII and binary STL files, export them separately or together as a binary STL file.
 * Rotate, scale and transform imported STL files, indepently or together.
