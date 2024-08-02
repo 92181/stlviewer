@@ -8,12 +8,17 @@ Various things that can be done are...
 * Choose which mesh gets displayed and which will not, optimal for an efficient viewing experience.
 
 # Usage
-Code here WIP
+The STL file viewer at it's core is an easy program to audit multiple STL files at the same time. The key functionality can be accessed through the canvas UI, or with the keybinds below.
 
-- `WASD`: To move around the scene.
-- `R`: To rotate the current selection around the specified axis.
-- `G`: To move the current selection.
-- `T`: To scale the current selection to the desired size.
+WIP 2024.
+
+Various keybinds that can be used are......
+
+- `WASD` To move around the scene.
+- `R` To rotate the current selection around the specified axis.
+- `G` To move the current selection.
+- `T` To scale the current selection to the desired size.
+- `P` If you want to import either an ASCII or binary STL file.
 
 # Images
 Images here WIP
