@@ -10,6 +10,11 @@ Various things that can be done are...
 # Usage
 Code here WIP
 
+- `WASD`: To move around the scene.
+- `R`: To rotate the current selection around the specified axis.
+- `G`: To move the current selection.
+- `T`: To scale the current selection to the desired size.
+
 # Images
 Images here WIP
 
